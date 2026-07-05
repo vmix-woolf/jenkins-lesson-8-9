@@ -1,0 +1,13 @@
+repository:
+  url: ""
+  sshPrivateKey: ""
+
+application:
+  name: django-app
+  namespace: argocd
+  project: default
+  sourceRepoURL: ""
+  targetRevision: main
+  chartPath: charts/django-app
+  destination: https://kubernetes.default.svc
+  destNamespace: django-app

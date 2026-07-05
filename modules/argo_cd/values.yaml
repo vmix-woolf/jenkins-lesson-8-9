@@ -1,0 +1,7 @@
+server:
+  service:
+    type: ${service_type}
+
+configs:
+  params:
+    server.insecure: true

@@ -99,3 +99,18 @@ output "jenkins_admin_password" {
   value       = module.jenkins.admin_password
   sensitive   = true
 }
+
+output "argocd_namespace" {
+  description = "Argo CD namespace"
+  value       = module.argo_cd.namespace
+}
+
+output "argocd_release_name" {
+  description = "Argo CD Helm release name"
+  value       = module.argo_cd.release_name
+}
+
+output "argocd_server_service_name" {
+  description = "Argo CD server service name"
+  value       = module.argo_cd.server_service_name
+}

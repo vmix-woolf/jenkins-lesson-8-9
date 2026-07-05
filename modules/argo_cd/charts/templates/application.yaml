@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.application.name }}
+  namespace: {{ .Values.application.namespace }}
+spec:
+  project: {{ .Values.application.project }}
+  source:
+    repoURL: {{ .Values.application.sourceRepoURL | quote }}
+    targetRevision: {{ .Values.application.targetRevision | quote }}
+    path: {{ .Values.application.chartPath | quote }}
+    helm:
+      releaseName: django-app
+  destination:
+    server: {{ .Values.application.destination | quote }}
+    namespace: {{ .Values.application.destNamespace | quote }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
