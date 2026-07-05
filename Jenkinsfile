@@ -31,6 +31,7 @@ pipeline {
                             chmod 644 ~/.ssh/known_hosts
 
                             git clone --branch "${SOURCE_BRANCH}" "${GIT_REPOSITORY_SSH}" .
+                            git config --global --add safe.directory "${WORKSPACE}"
                             git status
                         '''
                     }
