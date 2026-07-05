@@ -1,0 +1,88 @@
+pipeline {
+    agent {
+        label 'kaniko-git'
+    }
+
+    environment {
+        AWS_REGION = 'us-west-2'
+        ECR_REPOSITORY = '894662486142.dkr.ecr.us-west-2.amazonaws.com/lesson-8-9-ecr'
+        CHART_VALUES_FILE = 'charts/django-app/values.yaml'
+        TARGET_BRANCH = 'main'
+        GIT_SSH_CREDENTIALS_ID = 'github-ssh-key'
+        GIT_USER_NAME = 'jenkins'
+        GIT_USER_EMAIL = 'jenkins@example.com'
+    }
+
+    stages {
+        stage('checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('generate image tag') {
+            steps {
+                script {
+                    env.IMAGE_TAG = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+                }
+
+                echo "Image tag: ${IMAGE_TAG}"
+            }
+        }
+
+        stage('build and push image with kaniko') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                        /kaniko/executor \
+                          --context "${WORKSPACE}/app" \
+                          --dockerfile "${WORKSPACE}/app/Dockerfile" \
+                          --destination "${ECR_REPOSITORY}:${IMAGE_TAG}" \
+                          --destination "${ECR_REPOSITORY}:latest"
+                    '''
+                }
+            }
+        }
+
+        stage('update helm values') {
+            steps {
+                container('git') {
+                    sh '''
+                        sed -i "s|tag: .*|tag: ${IMAGE_TAG}|g" "${CHART_VALUES_FILE}"
+
+                        echo "Updated Helm values:"
+                        grep -A 4 "^image:" "${CHART_VALUES_FILE}"
+                    '''
+                }
+            }
+        }
+
+        stage('commit and push helm values') {
+            steps {
+                container('git') {
+                    sshagent(credentials: ["${GIT_SSH_CREDENTIALS_ID}"]) {
+                        sh '''
+                            mkdir -p ~/.ssh
+                            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+                            git config user.name "${GIT_USER_NAME}"
+                            git config user.email "${GIT_USER_EMAIL}"
+
+                            if git diff --quiet "${CHART_VALUES_FILE}"; then
+                              echo "No Helm values changes to commit"
+                              exit 0
+                            fi
+
+                            git add "${CHART_VALUES_FILE}"
+                            git commit -m "update django image tag to ${IMAGE_TAG}"
+                            git push origin HEAD:${TARGET_BRANCH}
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
