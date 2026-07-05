@@ -39,9 +39,8 @@ controller:
                         alwaysPullImage: true
                         args: "$${computer.jnlpmac} $${computer.name}"
                       - name: "kaniko"
-                        image: "gcr.io/kaniko-project/executor:latest"
-                        command: "sleep"
-                        args: "9999999"
+                        image: "gcr.io/kaniko-project/executor:debug"
+                        command: "/busybox/cat"
                         ttyEnabled: true
                         alwaysPullImage: true
                       - name: "git"

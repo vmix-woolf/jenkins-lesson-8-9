@@ -3,12 +3,18 @@ pipeline {
         label 'kaniko-git'
     }
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         AWS_REGION = 'us-west-2'
         ECR_REPOSITORY = '894662486142.dkr.ecr.us-west-2.amazonaws.com/lesson-8-9-ecr'
         CHART_VALUES_FILE = 'charts/django-app/values.yaml'
         TARGET_BRANCH = 'main'
-        GIT_SSH_CREDENTIALS_ID = 'github-ssh-key'
+        SOURCE_BRANCH = 'lesson-8-9'
+        GIT_SSH_CREDENTIALS_ID = 'github-rsa-key'
+        GIT_REPOSITORY_SSH = 'git@github.com:vmix-woolf/jenkins-lesson-8-9.git'
         GIT_USER_NAME = 'jenkins'
         GIT_USER_EMAIL = 'jenkins@example.com'
     }
@@ -16,20 +22,34 @@ pipeline {
     stages {
         stage('checkout') {
             steps {
-                checkout scm
+                container('git') {
+                    sshagent(credentials: ["${GIT_SSH_CREDENTIALS_ID}"]) {
+                        sh '''
+                            mkdir -p ~/.ssh
+                            ssh-keyscan -t rsa,ecdsa,ed25519 github.com > ~/.ssh/known_hosts
+                            chmod 700 ~/.ssh
+                            chmod 644 ~/.ssh/known_hosts
+
+                            git clone --branch "${SOURCE_BRANCH}" "${GIT_REPOSITORY_SSH}" .
+                            git status
+                        '''
+                    }
+                }
             }
         }
 
         stage('generate image tag') {
             steps {
-                script {
-                    env.IMAGE_TAG = sh(
-                        script: 'git rev-parse --short HEAD',
-                        returnStdout: true
-                    ).trim()
-                }
+                container('git') {
+                    script {
+                        env.IMAGE_TAG = sh(
+                            script: 'git rev-parse --short HEAD',
+                            returnStdout: true
+                        ).trim()
+                    }
 
-                echo "Image tag: ${IMAGE_TAG}"
+                    echo "Image tag: ${IMAGE_TAG}"
+                }
             }
         }
 
@@ -65,9 +85,6 @@ pipeline {
                 container('git') {
                     sshagent(credentials: ["${GIT_SSH_CREDENTIALS_ID}"]) {
                         sh '''
-                            mkdir -p ~/.ssh
-                            ssh-keyscan github.com >> ~/.ssh/known_hosts
-
                             git config user.name "${GIT_USER_NAME}"
                             git config user.email "${GIT_USER_EMAIL}"
 
