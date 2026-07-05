@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  SECRET_KEY: {{ .Values.config.SECRET_KEY | quote }}
+  DEBUG: {{ .Values.config.DEBUG | quote }}
+  ALLOWED_HOSTS: {{ .Values.config.ALLOWED_HOSTS | quote }}
+  DB_NAME: {{ .Values.config.DB_NAME | quote }}
+  DB_USER: {{ .Values.config.DB_USER | quote }}
+  DB_PASSWORD: {{ .Values.config.DB_PASSWORD | quote }}
+  DB_HOST: {{ .Values.config.DB_HOST | quote }}
+  DB_PORT: {{ .Values.config.DB_PORT | quote }}

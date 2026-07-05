@@ -1,0 +1,35 @@
+replicaCount: 2
+
+image:
+  repository: 894662486142.dkr.ecr.us-west-2.amazonaws.com/lesson-8-9-ecr
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+config:
+  SECRET_KEY: "django-insecure-br3=b)zq6&^-2_wb@!&5o31u7o_=p88=d_ykpxt!b0-u@jp_fz"
+  DEBUG: "True"
+  ALLOWED_HOSTS: "*"
+  DB_NAME: "django_db"
+  DB_USER: "django_user"
+  DB_PASSWORD: "change_me"
+  DB_HOST: "localhost"
+  DB_PORT: "5432"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
