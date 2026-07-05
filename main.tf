@@ -6,11 +6,43 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.17"
+    }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.37"
+    }
   }
 }
 
 provider "aws" {
   region = "us-west-2"
+}
+
+data "aws_eks_cluster" "main" {
+  name = module.eks.cluster_name
+}
+
+data "aws_eks_cluster_auth" "main" {
+  name = module.eks.cluster_name
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.main.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.main.token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.main.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.main.token
+  }
 }
 
 module "s3_backend" {
@@ -68,4 +100,23 @@ module "eks" {
   node_desired_size   = 2
   node_min_size       = 2
   node_max_size       = 6
+}
+
+module "jenkins" {
+  source = "./modules/jenkins"
+
+  namespace      = "jenkins"
+  chart_version  = "5.9.32"
+  admin_user     = "admin"
+  admin_password = "admin123456"
+  service_type   = "LoadBalancer"
+  storage_class  = "gp2"
+  storage_size   = "8Gi"
+  jenkins_url    = "http://jenkins.jenkins.svc.cluster.local:8080"
+  ecr_repository = module.ecr.repository_url
+  aws_region     = "us-west-2"
+
+  depends_on = [
+    module.eks
+  ]
 }

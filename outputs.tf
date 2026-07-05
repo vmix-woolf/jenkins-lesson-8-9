@@ -78,3 +78,24 @@ output "eks_cluster_certificate_authority_data" {
   value       = module.eks.cluster_certificate_authority_data
   sensitive   = true
 }
+
+output "jenkins_namespace" {
+  description = "Jenkins namespace"
+  value       = module.jenkins.namespace
+}
+
+output "jenkins_release_name" {
+  description = "Jenkins Helm release name"
+  value       = module.jenkins.release_name
+}
+
+output "jenkins_admin_user" {
+  description = "Jenkins admin username"
+  value       = module.jenkins.admin_user
+}
+
+output "jenkins_admin_password" {
+  description = "Jenkins admin password"
+  value       = module.jenkins.admin_password
+  sensitive   = true
+}

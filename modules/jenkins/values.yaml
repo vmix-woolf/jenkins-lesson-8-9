@@ -1,0 +1,75 @@
+controller:
+  admin:
+    existingSecret: ${admin_secret_name}
+    userKey: jenkins-admin-user
+    passwordKey: jenkins-admin-password
+
+  serviceType: ${service_type}
+
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+    - credentials
+    - plain-credentials
+    - ssh-credentials
+    - pipeline-utility-steps
+
+  JCasC:
+    defaultConfig: true
+    configScripts:
+      kubernetes-agents: |
+        jenkins:
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                namespace: "jenkins"
+                serverUrl: "https://kubernetes.default"
+                jenkinsUrl: "${jenkins_url}"
+                templates:
+                  - name: "kaniko-git"
+                    label: "kaniko-git"
+                    namespace: "jenkins"
+                    serviceAccount: "jenkins"
+                    containers:
+                      - name: "jnlp"
+                        image: "jenkins/inbound-agent:latest"
+                        alwaysPullImage: true
+                        args: "$${computer.jnlpmac} $${computer.name}"
+                      - name: "kaniko"
+                        image: "gcr.io/kaniko-project/executor:latest"
+                        command: "sleep"
+                        args: "9999999"
+                        ttyEnabled: true
+                        alwaysPullImage: true
+                      - name: "git"
+                        image: "alpine/git:latest"
+                        command: "sleep"
+                        args: "9999999"
+                        ttyEnabled: true
+                        alwaysPullImage: true
+                    volumes:
+                      - emptyDirVolume:
+                          memory: false
+                          mountPath: "/workspace"
+                    envVars:
+                      - envVar:
+                          key: "AWS_REGION"
+                          value: "${aws_region}"
+                      - envVar:
+                          key: "ECR_REPOSITORY"
+                          value: "${ecr_repository}"
+
+persistence:
+  enabled: false
+
+agent:
+  enabled: true
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: jenkins
