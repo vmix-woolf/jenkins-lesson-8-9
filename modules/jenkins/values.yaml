@@ -43,6 +43,19 @@ controller:
                         command: "/busybox/cat"
                         ttyEnabled: true
                         alwaysPullImage: true
+                        envVars:
+                          - secretEnvVar:
+                              key: "AWS_ACCESS_KEY_ID"
+                              secretName: "aws-ecr-credentials"
+                              secretKey: "AWS_ACCESS_KEY_ID"
+                          - secretEnvVar:
+                              key: "AWS_SECRET_ACCESS_KEY"
+                              secretName: "aws-ecr-credentials"
+                              secretKey: "AWS_SECRET_ACCESS_KEY"
+                          - secretEnvVar:
+                              key: "AWS_DEFAULT_REGION"
+                              secretName: "aws-ecr-credentials"
+                              secretKey: "AWS_DEFAULT_REGION"
                       - name: "git"
                         image: "alpine/git:latest"
                         command: "sleep"
