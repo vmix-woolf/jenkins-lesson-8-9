@@ -17,3 +17,8 @@ output "node_group_name" {
   description = "Name of the EKS managed node group"
   value       = aws_eks_node_group.main.node_group_name
 }
+
+output "cluster_certificate_authority_data" {
+  description = "Certificate authority data of the EKS cluster"
+  value       = aws_eks_cluster.main.certificate_authority[0].data
+}

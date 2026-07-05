@@ -72,3 +72,9 @@ output "eks_node_group_name" {
   description = "Name of the EKS managed node group"
   value       = module.eks.node_group_name
 }
+
+output "eks_cluster_certificate_authority_data" {
+  description = "Certificate authority data of the EKS cluster"
+  value       = module.eks.cluster_certificate_authority_data
+  sensitive   = true
+}
