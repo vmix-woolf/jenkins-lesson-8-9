@@ -79,6 +79,38 @@ module "vpc" {
   cluster_name = "lesson-8-9-eks"
 }
 
+module "rds" {
+  source = "./modules/rds"
+
+  name       = "lesson-db-module"
+  use_aurora = false
+
+  engine         = "postgres"
+  engine_version = null
+  instance_class = "db.t3.micro"
+
+  database_name = "appdb"
+  username      = "dbadmin"
+  password      = "ChangeMe123456!"
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnet_ids
+
+  allowed_cidr_blocks = [
+    "10.0.0.0/16"
+  ]
+
+  multi_az            = false
+  publicly_accessible = false
+
+  skip_final_snapshot = true
+  deletion_protection = false
+
+  tags = {
+    Project = "lesson-db-module"
+  }
+}
+
 module "ecr" {
   source = "./modules/ecr"
 

@@ -114,3 +114,38 @@ output "argocd_server_service_name" {
   description = "Argo CD server service name"
   value       = module.argo_cd.server_service_name
 }
+
+output "rds_endpoint" {
+  description = "Database endpoint address"
+  value       = module.rds.endpoint
+}
+
+output "rds_reader_endpoint" {
+  description = "Aurora reader endpoint. Null for regular RDS"
+  value       = module.rds.reader_endpoint
+}
+
+output "rds_port" {
+  description = "Database port"
+  value       = module.rds.port
+}
+
+output "rds_db_identifier" {
+  description = "Database instance or cluster identifier"
+  value       = module.rds.db_identifier
+}
+
+output "rds_security_group_id" {
+  description = "Database security group ID"
+  value       = module.rds.security_group_id
+}
+
+output "rds_subnet_group_name" {
+  description = "Database subnet group name"
+  value       = module.rds.subnet_group_name
+}
+
+output "rds_parameter_group_name" {
+  description = "Database parameter group name"
+  value       = module.rds.parameter_group_name
+}
